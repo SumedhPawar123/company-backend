@@ -6,6 +6,7 @@ const connectDB = require('./config/db')
 const contactRoute = require('./routes/contactRoute')
 const adminRoute = require('./routes/adminRoute')
 const projectRoute = require('./routes/projectRoute')
+const serviceRoute = require('./routes/serviceRoute')
 dotenv.config()
 
 const app = express()
@@ -26,6 +27,7 @@ app.get("/", (req,res) => {
 app.use("/api/contact", contactRoute)
 app.use("/api/admin", adminRoute)
 app.use("/api/projects", projectRoute)
+app.use("/api/service", serviceRoute)
 
 // Creating a server
 const server = http.createServer(app)
