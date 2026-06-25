@@ -4,6 +4,8 @@ const http = require('http')
 const dotenv = require('dotenv')
 const connectDB = require('./config/db')
 const contactRoute = require('./routes/contactRoute')
+const adminRoute = require('./routes/adminRoute')
+const projectRoute = require('./routes/projectRoute')
 dotenv.config()
 
 const app = express()
@@ -21,7 +23,9 @@ app.get("/", (req,res) => {
     res.send("Indoria technologies is Listening")
 })
 
-app.use("/contact", contactRoute)
+app.use("/api/contact", contactRoute)
+app.use("/api/admin", adminRoute)
+app.use("/api/projects", projectRoute)
 
 // Creating a server
 const server = http.createServer(app)

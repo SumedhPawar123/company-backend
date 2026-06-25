@@ -11,7 +11,6 @@ const { protect, adminOnly } = require("../middleware/authMiddleware");
 
 
 
-
 // Public Route
 router.post("/", createContact);
 

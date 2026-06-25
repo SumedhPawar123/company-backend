@@ -19,7 +19,8 @@ const seedAdmin = async () => {
     const admin = await Admin.create({
       fullName: process.env.ADMIN_NAME,
       email: process.env.ADMIN_EMAIL,
-      password: process.env.ADMIN_PASSWORD, // Will be hashed by pre-save hook
+      password: process.env.ADMIN_PASSWORD, // Will be hashed by pre-savde hook
+      role: "admin"
     });
 
     console.log("Admin created successfully!");
