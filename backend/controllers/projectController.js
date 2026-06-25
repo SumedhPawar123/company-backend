@@ -33,11 +33,34 @@ exports.getAllProjects = async (req, res) => {
       createdAt: -1,
     });
 
+    // statistics
+    const totalDraft = await Project.countDocuments({
+        status : "Draft"
+    })
+
+    const totalPublished = await Project.countDocuments({
+        status: "Published"
+    })
+
+    const totalProject = await Project.countDocuments()
+
+    const totalArchived = await Project.countDocuments({
+        status : "Archived"
+    })
+
+
     res.status(200).json({
       success: true,
+      statistics: {
+        totalProject,
+        totalPublished,
+        totalDraft,
+        totalArchived
+      },
       count: projects.length,
       data: projects,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
