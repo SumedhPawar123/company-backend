@@ -27,7 +27,7 @@ app.get("/", (req,res) => {
 app.use("/api/contact", contactRoute)
 app.use("/api/admin", adminRoute)
 app.use("/api/projects", projectRoute)
-app.use("/api/service", serviceRoute)
+app.use("/api/services", serviceRoute)
 
 // Creating a server
 const server = http.createServer(app)

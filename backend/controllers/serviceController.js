@@ -7,7 +7,16 @@ exports.createService = async (req, res) => {
     try {
         if(!name || !description || !category){
             return res.status(400).json({
-                success: false,
+
+                //==========================================
+                // says it failed even though it succeeded
+                //============================================
+
+                //success: false,
+                success: true,
+
+                //================================================
+
                 message: 'Service name, description & category are required'
             })
         }
@@ -63,8 +72,19 @@ exports.getAllServices = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            count: Services.length,
-            totals: {
+
+            //==========================================================
+            //"Services" (capital S) was never defined — ReferenceError
+            //lowercase "services" — the actual array from Service.find()
+            //==========================================================
+
+            //count: Services.length,
+            count: services.length,
+
+            //==================================================
+
+            // change totals to statistics becoz project controller also have statistics 
+            statistics: {
                 totalService,
                 totalDraft,
                 totalPublished,
@@ -135,6 +155,49 @@ exports.updateService = async (req, res) => {
     });
   }
 };
+
+//=========================================================================
+// Update Service Status only (used by the quick status changer in admin UI)
+//==========================================================================
+
+exports.updateServiceStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+ 
+    if (!["Draft", "Published", "Archived"].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Status must be Draft, Published or Archived",
+      });
+    }
+ 
+    const service = await Service.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true, runValidators: true }
+    );
+ 
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: "Service not found",
+      });
+    }
+ 
+    res.status(200).json({
+      success: true,
+      message: "Service status updated successfully",
+      data: service,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+//===========================================================
 
 // Delete Service
 exports.deleteService = async (req, res) => {

@@ -49,3 +49,15 @@ exports.login = async (req, res, next) => {
         next(error)
     }
 }
+
+// Get current admin (protected)
+exports.getMe = async (req, res) => {
+    res.status(200).json({
+        success: true,
+        data: {
+            fullName: req.admin.fullName,
+            email: req.admin.email,
+            role: req.admin.role,
+        },
+    });
+}
