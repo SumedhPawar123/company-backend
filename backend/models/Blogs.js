@@ -28,6 +28,13 @@ const blogsSchema = new mongoose.Schema({
         required: [true, 'Category is required'],
         enum: ['DevOps', 'WebPerformance', 'Automation', 'Cloud', 'Security', 'Architecture', 'Other']
     },
+    // ── NEW: Published / Draft status ──────────────────────────────
+    status: {
+        type: String,
+        enum: ['Draft', 'Published'],
+        default: 'Draft'
+    },
+    // ───────────────────────────────────────────────────────────────
     thumbnail: {
         type: String,
         required: [true, 'blogs cover image is required']

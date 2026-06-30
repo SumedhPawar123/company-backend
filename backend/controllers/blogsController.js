@@ -9,16 +9,20 @@ const generateUniqueSlug = async (title) => {
         trim: true
     });
 
-    let existingBlog = await Blog.findOne({ slug });
+    //-------------------------------------------------
+    // use Blogs instead of Blog
+    let existing = await Blogs.findOne({ slug });  
+    // let existingBlog = await Blog.findOne({ slug });
+    //-------------------------------------------------
 
     let counter = 1;
 
-    while (existingBlog) {
-        existingBlog = await Blog.findOne({
+    while (existing) {
+        existing = await Blogs.findOne({
             slug: `${slug}-${counter}`
         });
 
-        if (!existingBlog) {
+        if (!existing) {
             slug = `${slug}-${counter}`;
             break;
         }
@@ -36,10 +40,23 @@ const generateUniqueSlug = async (title) => {
 // ======================
 exports.createBlog = async (req, res) => {
     try {
+        if (!req.body.title) {
+            return res.status(400).json({ success: false, message: "Title is required" });
+        }
 
         req.body.slug = await generateUniqueSlug(req.body.title);
 
-        const blog = await Blog.create(req.body);
+        // If thumbnail uploaded via multer, set the path/url
+        // multer puts the file in req.file — store as a URL path
+        if (req.file) {
+            req.body.thumbnail = `/uploads/blogs/${req.file.filename}`;
+        }
+
+        //===============================================
+        //uses Blogs instead of Blog
+        //const blog = await Blog.create(req.body);
+        const blog   = await Blogs.create(req.body);
+        //===============================================
 
         res.status(201).json({
             success: true,
@@ -57,34 +74,48 @@ exports.createBlog = async (req, res) => {
 };
 
 
-
-// ======================
-// Get All Blogs
-// ======================
+ 
+// ─── Get All Blogs (with search + pagination) ────────────────────────────────
 exports.getAllBlogs = async (req, res) => {
-
     try {
-
-        const blogs = await Blog.find()
-            .sort({ createdAt: -1 });
-
+        const { search, status, category, page = 1, limit = 6 } = req.query;
+ 
+        const query = {};
+ 
+        if (search) {
+            query.$or = [
+                { title:    { $regex: search, $options: "i" } },
+                { author:   { $regex: search, $options: "i" } },
+                { category: { $regex: search, $options: "i" } },
+            ];
+        }
+ 
+        if (status)   query.status   = status;
+        if (category) query.category = category;
+ 
+        const skip  = (Number(page) - 1) * Number(limit);
+        const total = await Blogs.countDocuments(query);
+ 
+        const blogs = await Blogs.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(Number(limit));
+ 
         res.status(200).json({
             success: true,
             count: blogs.length,
-            data: blogs
+            data: blogs,
+            pagination: {
+                total,
+                page:       Number(page),
+                limit:      Number(limit),
+                totalPages: Math.ceil(total / Number(limit)),
+            }
         });
-
     } catch (error) {
-
-        res.status(500).json({
-            success: false,
-            message: error.message
-        });
+        res.status(500).json({ success: false, message: error.message });
     }
-
 };
-
-
 
 // ======================
 // Get Blog By Slug
@@ -93,7 +124,7 @@ exports.getBlogBySlug = async (req, res) => {
 
     try {
 
-        const blog = await Blog.findOne({
+        const blog = await Blogs.findOne({
             slug: req.params.slug
         });
 
@@ -132,7 +163,15 @@ exports.updateBlog = async (req, res) => {
             req.body.slug = await generateUniqueSlug(req.body.title);
         }
 
-        const blog = await Blog.findByIdAndUpdate(
+        //=============================================================
+        // Add multer/file handling at all.
+        if (req.file) {
+            req.body.thumbnail = `/uploads/blogs/${req.file.filename}`;
+        }
+ 
+        //=================================================================
+
+        const blog = await Blogs.findByIdAndUpdate(
             req.params.id,
             req.body,
             {
@@ -173,7 +212,7 @@ exports.deleteBlog = async (req, res) => {
 
     try {
 
-        const blog = await Blog.findByIdAndDelete(req.params.id);
+        const blog = await Blogs.findByIdAndDelete(req.params.id);
 
         if (!blog) {
             return res.status(404).json({
@@ -189,7 +228,7 @@ exports.deleteBlog = async (req, res) => {
 
     } catch (error) {
 
-        res.status(200).json({
+        res.status(500).json({
             success: false,
             message: error.message
         });
