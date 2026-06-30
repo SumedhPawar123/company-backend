@@ -9,7 +9,8 @@ const adminRoute = require('./routes/adminRoute')
 const projectRoute = require('./routes/projectRoute')
 const serviceRoute = require('./routes/serviceRoute')
 const blogsRoute = require("./routes/blogsRoute")
-const faqRoute = require('./routes/faqRoute')   
+const faqRoute = require('./routes/faqRoute') 
+const jobsRoute = require('./routes/jobRoute')  
 dotenv.config()
 
 const app = express()
@@ -34,6 +35,7 @@ app.use("/api/admin", adminRoute)
 app.use("/api/projects", projectRoute)
 app.use("/api/services", serviceRoute)
 app.use("/api/blogs", blogsRoute)
+app.use('/api/jobs', jobsRoute)
 app.use("/api/faqs", faqRoute)  
 
 // Creating a server
