@@ -77,11 +77,19 @@ exports.getJobByJobId = async (req, res, next) => {
 };
 
 // Create Job
+//======================================================
+//authMiddleware.js sets req.admin = admin, not req.user — 
+// so req.user is always undefined, and createdBy will 
+// silently stay empty on every job you create, even 
+// though the field exists and you clearly intended 
+// to track who created it
+//======================================================
 exports.createJob = async (req, res, next) => {
   try {
     const job = await Job.create({
       ...req.body,
-      createdBy: req.user?.userId
+      //createdBy: req.user?.userId
+      createdBy: req.admin?._id
     });
 
     res.status(201).json({
@@ -209,6 +217,69 @@ exports.getJobStats = async (req, res, next) => {
         totalJobs,
         jobsByDepartment,
         jobsByType,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// ============================================================
+// ── NEW: Get All Jobs for Admin (search + every status) ─────
+// Needed because getAllJobs above always forces isActive:true,
+// so the admin dashboard could never see Inactive/closed jobs
+// or search by keyword. 
+// ============================================================
+exports.getAdminJobs = async (req, res, next) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      department,
+      type,
+      level,
+      status, // "Active" | "Inactive" | "" (all)
+    } = req.query;
+ 
+    const filter = {};
+ 
+    if (status === "Active") filter.isActive = true;
+    else if (status === "Inactive") filter.isActive = false;
+    // no status / "All" -> don't filter by isActive, show everything
+ 
+    if (department) filter.department = department;
+    if (type) filter.type = type;
+    if (level) filter.experienceLevel = level;
+ 
+    if (search) {
+      filter.$or = [
+        { jobTitle: { $regex: search, $options: "i" } },
+        { jobId: { $regex: search, $options: "i" } },
+        { department: { $regex: search, $options: "i" } },
+        { location: { $regex: search, $options: "i" } },
+      ];
+    }
+ 
+    const pageNum = Math.max(Number(page) || 1, 1);
+    const limitNum = Math.max(Number(limit) || 10, 1);
+ 
+    const jobs = await Job.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum);
+ 
+    const total = await Job.countDocuments(filter);
+ 
+    res.status(200).json({
+      success: true,
+      data: jobs,
+      pagination: {
+        total,
+        pages: Math.max(Math.ceil(total / limitNum), 1),
+        currentPage: pageNum,
+        limit: limitNum,
       },
     });
   } catch (error) {

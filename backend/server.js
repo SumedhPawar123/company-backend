@@ -10,7 +10,9 @@ const projectRoute = require('./routes/projectRoute')
 const serviceRoute = require('./routes/serviceRoute')
 const blogsRoute = require("./routes/blogsRoute")
 const faqRoute = require('./routes/faqRoute') 
-const jobsRoute = require('./routes/jobRoute')  
+const jobsRoute = require('./routes/jobRoute') 
+const candidateRoute = require('./routes/candidateRoute')
+
 dotenv.config()
 
 const app = express()
@@ -37,6 +39,7 @@ app.use("/api/services", serviceRoute)
 app.use("/api/blogs", blogsRoute)
 app.use('/api/jobs', jobsRoute)
 app.use("/api/faqs", faqRoute)  
+app.use("/api/candidates", candidateRoute)
 
 // Creating a server
 const server = http.createServer(app)

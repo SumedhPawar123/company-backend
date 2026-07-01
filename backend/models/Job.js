@@ -82,7 +82,12 @@ const jobSchema = new mongoose.Schema({
 
 
 // Generate unique Job ID before saving
-jobSchema.pre('save', async function () {
+//==========================================================
+//The fix is a one-word change — swap pre('save') for
+//  pre('validate'), so the jobId gets assigned before the 
+// required-field check runs instead of after
+//============================================================
+jobSchema.pre('validate', async function () {
   if (!this.jobId) {
     const count = await mongoose.model('Job').countDocuments();
     const year = new Date().getFullYear();
