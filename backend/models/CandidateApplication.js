@@ -1,5 +1,13 @@
 const mongoose = require('mongoose');
 
+// ── Tiny counter model, defined here so we don't need a separate file ──────
+// Reuses the mongoose connection to keep a running, atomic sequence per year.
+const counterSchema = new mongoose.Schema({
+    _id: { type: String, required: true }, // e.g. "candidateApplication-2026"
+    seq: { type: Number, default: 0 },
+});
+const Counter = mongoose.models.Counter || mongoose.model('Counter', counterSchema);
+
 const candidateApplicationSchema = new mongoose.Schema({
     applicationId: {
         type: String,
@@ -69,14 +77,17 @@ const candidateApplicationSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Generate a human-readable applicationId before validation
-// (pre('validate') so it exists before the required check runs — same
-// pattern used in Job.js for jobId)
+// Atomically get the next sequence number for this year — never reused,
+// never duplicated, even if applications are later deleted.
 candidateApplicationSchema.pre('validate', async function () {
     if (!this.applicationId) {
-        const count = await mongoose.model('CandidateApplication').countDocuments();
         const year = new Date().getFullYear();
-        this.applicationId = `APP-${year}-${String(count + 1).padStart(4, '0')}`;
+        const counter = await Counter.findByIdAndUpdate(
+            `candidateApplication-${year}`,
+            { $inc: { seq: 1 } },
+            { new: true, upsert: true }
+        );
+        this.applicationId = `APP-${year}-${String(counter.seq).padStart(4, '0')}`;
     }
 });
 

@@ -33,7 +33,9 @@ const fileFilter = (req, file, cb) => {
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Unsupported file type. Allowed: PDF, JPG, PNG, DOC, DOCX."), false);
+    const err = new Error("Unsupported file type. Allowed: PDF, JPG, PNG, DOC, DOCX.");
+    err.status = 400;
+    cb(err, false);
   }
 };
 

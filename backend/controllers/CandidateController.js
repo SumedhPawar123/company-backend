@@ -12,6 +12,21 @@ exports.submitApplication = async (req, res, next) => {
       return next(error);
     }
 
+    // Exactly 10 digits, India, no country code, no spaces/dashes
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      const error = new Error("Please enter a valid 10-digit phone number.");
+      error.status = 400;
+      return next(error);
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      const error = new Error("Please enter a valid email address.");
+      error.status = 400;
+      return next(error);
+    }
+
     if (!req.files || !req.files.resume || !req.files.idProof || !req.files.passportPhoto) {
       const error = new Error("Resume, ID proof, and passport photo are all required.");
       error.status = 400;

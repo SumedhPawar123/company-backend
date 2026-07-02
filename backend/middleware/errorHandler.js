@@ -7,6 +7,18 @@ exports.notFound = (req, res, next) => {
 
 // Global error handler
 exports.errorHandler = (err, req, res, next) => {
+  // Multer errors (file too large, wrong field, too many files, etc.)
+  if (err.name === "MulterError") {
+    const multerMessages = {
+      LIMIT_FILE_SIZE: "File is too large. Maximum size is 5MB.",
+      LIMIT_UNEXPECTED_FILE: "Unexpected file field. Please check your uploaded documents.",
+      LIMIT_FILE_COUNT: "Too many files uploaded.",
+    };
+    return res.status(400).json({
+      message: multerMessages[err.code] || err.message,
+    });
+  }
+  
   // Mongoose validation error
   if (err.name === "ValidationError") {
     const messages = Object.values(err.errors).map((e) => e.message);
