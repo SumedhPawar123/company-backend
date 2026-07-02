@@ -12,6 +12,7 @@ const blogsRoute = require("./routes/blogsRoute")
 const faqRoute = require('./routes/faqRoute') 
 const jobsRoute = require('./routes/jobRoute') 
 const candidateRoute = require('./routes/candidateRoute')
+const configRoute = require('./routes/configRoute')
 
 dotenv.config()
 
@@ -40,6 +41,7 @@ app.use("/api/blogs", blogsRoute)
 app.use('/api/jobs', jobsRoute)
 app.use("/api/faqs", faqRoute)  
 app.use("/api/candidates", candidateRoute)
+app.use("/api/config", configRoute)
 
 // Creating a server
 const server = http.createServer(app)
